@@ -1,18 +1,18 @@
-# Importando as libraries
 import rows
 import datetime
 import csv
-
+import time
 from pathlib import Path
-from time import sleep
-from requests import get, exceptions
-import settings
+
+import requests.exceptions as req_exceptions
+import requests
 
 from divulga import lista_frases, checar_timelines, google_sshet
 from autenticadores import twitter_auth, google_api_auth, masto_auth
+import settings
+
 
 # Parametros de acesso das urls
-
 headers = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
@@ -25,19 +25,23 @@ TOTAL_TENTATIVAS = 10
 STATUS_SUCESSO = 200
 
 # Guardando informações de hora e data da máquina
-
 DIA = datetime.datetime.now().day
 MES = datetime.datetime.now().month
 ANO = datetime.datetime.now().year
 
-data = "{:02d}/{:02d}/{:02d}".format(DIA, MES, ANO)  # 11/04/2019
+data = f"{DIA:02d}/{MES:02d}/{ANO:02d}"  # 11/04/2019
 
 
 def criar_tweet(url, orgao):
     """
     Criando o tweet com o status do site recém acessado
     """
-    twitter_bot.update_status(lista_frases(url=url, orgao=orgao))
+    twitter_bot.update_status(
+        lista_frases(
+            url=url,
+            orgao=orgao
+        )
+    )
 
 
 def plan_gs(dia, mes, ano):
@@ -73,7 +77,7 @@ def plan_gs(dia, mes, ano):
     else:
         planilha = google_drive_creds.open(title=offline_titulo)
 
-    sleep(5)
+    time.sleep(5)
     planilha.share(None, perm_type="anyone", role="reader")
     print(f"https://docs.google.com/spreadsheets/d/{planilha.id}\n")
     return planilha
@@ -138,7 +142,7 @@ def busca_disponibilidade_sites(sites):
         for tentativa in range(1, TOTAL_TENTATIVAS + 1):
             try:
                 momento = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
-                resposta = get(url, timeout=30, headers=headers)
+                resposta = requests.get(url, timeout=30, headers=headers)
                 dados = cria_dados(url=url, portal=orgao, resposta=resposta.status_code)
                 resultados.append(dados)
                 if resposta.status_code == STATUS_SUCESSO:
@@ -155,9 +159,9 @@ def busca_disponibilidade_sites(sites):
                             checar_timelines(mastodon_handler=mastodon_bot, url=url, orgao=orgao)
 
             except (
-                exceptions.ConnectionError,
-                exceptions.Timeout,
-                exceptions.TooManyRedirects,
+                req_exceptions.ConnectionError,
+                req_exceptions.Timeout,
+                req_exceptions.TooManyRedirects,
             ) as e:
                 dados = cria_dados(url=url, portal=orgao, resposta=str(e))
                 resultados.append(dados)
@@ -186,4 +190,4 @@ if __name__ == "__main__":
     sites = carregar_dados_site()
     while True:
         busca_disponibilidade_sites(sites)
-        sleep(600)
+        time.sleep(600)

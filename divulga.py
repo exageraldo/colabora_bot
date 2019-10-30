@@ -1,6 +1,8 @@
-from autenticadores import google_api_auth
-from random import choice
+import random
+
 import gspread
+
+from autenticadores import google_api_auth
 
 
 def google_sshet():
@@ -8,8 +10,10 @@ def google_sshet():
     Função simples para retornar um objeto capaz de manipular as planilhas do Google Sheets.
     """
     session = google_api_auth()
-    ggle_cred = gspread.Client(None, session)
-    return ggle_cred
+    return gspread.Client(
+        auth=None,
+        session=session
+    )
 
 
 def lista_frases(url, orgao):
@@ -25,22 +29,19 @@ def lista_frases(url, orgao):
         f"🤖 Opa {orgao}, parece que o site {url} não está acessível como deveria. O que está acontecendo?",
         f"🤖 Tentei acessar o site {url} e não consegui. {orgao} está acontecendo algum problema com essa portal de transparência?",
     ]
-    msg_orgao = choice(com_orgao)
-    return msg_orgao
+    return random.choice(com_orgao)
 
 
-def checar_timelines(twitter_hander, mastodon_handler, url, orgao):
+def checar_timelines(twitter_hander, mastodon_handler, url, orgao, limit=10):
     """
-    Recupera os 10 últimos toots da conta do Mastodon.
+    Recupera os [limit] últimos toots da conta do Mastodon.
     Caso a URL não esteja entre as últimas notificadas, é feita a postagem.
     Feature necessária para não floodar a timeline alheia caso um site fique offline por longos períodos de tempo.
     """
 
-    mastodon_bot = mastodon_handler
-    twitter_bot = twitter_hander
-    timeline = mastodon_bot.timeline_home(limit=10)
+    timeline = mastodon_handler.timeline_home(limit)
     urls_postadas = [toot["content"] for toot in timeline]
     contem = any(url in toot for toot in urls_postadas)
     if not contem:
-        mastodon_bot.toot(lista_frases(url=url, orgao=orgao))
-        twitter_bot.update_status(status=lista_frases(url=url, orgao=orgao))
+        mastodon_handler.toot(lista_frases(url=url, orgao=orgao))
+        twitter_hander.update_status(status=lista_frases(url=url, orgao=orgao))

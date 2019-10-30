@@ -10,7 +10,7 @@ Siga [**@colabora_bot**](https://twitter.com/colabora_bot)
 
 ### Arquivo de configurações
 - Crie um arquivo na raiz do projeto chamado `.env`, ele será utilizado para salvar as variaveis de configuração do bot. 
-- Copie o conteúdo do arquivo `.end.example` para o arquivo recém criado `.env`. 
+- Copie o conteúdo do arquivo `.env.example` para o arquivo recém criado `.env`. 
 > Note que este arquivo de exemplo contem a variavel `DEBUG=True`, isso irá desativar as dependencias externas do bot para rodar localmente sem problemas.
 
 ### Configurando dependencias externas
