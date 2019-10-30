@@ -1,5 +1,6 @@
 from decouple import config
 
+
 debug = config("DEBUG", default=False)
 # [Twitter API Keys]
 consumer_key = config("CONSUMER_KEY")
